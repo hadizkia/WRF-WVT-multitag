@@ -167,9 +167,15 @@ python3 tools/wvt_multitag/gen_wvt_multitag.py 20     # up to 20 tags (tracer_op
 ## Cost
 
 Each extra tag adds 6 advected species and one more pass of the three tracer
-schemes. In the 2-tag test below (121 × 101 × 45 grid, 48 MPI tasks, 12 h) the
-second tag cost **~35 %** of a single-tag run, versus 100 % for a second
-separate run, and the grid memory WRF allocates grew by 11 %.
+schemes. Measured in the validation runs below (12 h):
+
+| domain, MPI tasks | 1 tag | N tags | cost of each extra tag |
+|---|---|---|---|
+| 121 × 101 × 45, 48 | 53–56 s | 2 tags: 74 s | ~35 % of a single-tag run |
+| 941 × 421 × 45, 192 | 440–444 s | 3 tags: 692 s | ~28 % of a single-tag run |
+
+A separate run per tag would cost 100 % each. On the small domain the grid
+memory WRF allocates grew by 11 % for the second tag.
 
 ## Limits
 
@@ -203,7 +209,24 @@ LL = local land source, ~LL = everything else.
 Gulf of Mexico / Atlantic, tag 3 = local land, each against its own
 single-tag production WRF-WVTs run.
 
-*Test running; results will be added here.*
+| check | result |
+|---|---|
+| 3-tag run vs the single-tag runs: 24 model fields | identical (0 difference) |
+| tag 1 (North Pacific) vs the single-tag North Pacific run: 13 tag fields | identical |
+| tag 2 (Gulf of Mexico) vs the single-tag Gulf run | identical |
+| tag 3 (local land) vs the single-tag local-land run | identical |
+
+Run time on 192 MPI tasks: 440–444 s for each single-tag run, 692 s for the
+3-tag run, i.e. three tags in one run cost 1.6 single-tag runs instead of 3.
+
+Note on NaN in the boundary zone. On both domains, the original single-tag
+WRF-WVTs produces NaN in `qv_tr` (and `TR_THUM_*`) inside the 5-point
+specified/relaxation zone (`spec_bdy_width = 5`), from the first hours on.
+They never reach the interior (checked over 17 months of a production run),
+and precipitation tracers have none. The multi-tag code reproduces them
+exactly, cell for cell, so they come from WRF-WVTs itself. Exclude the
+boundary zone in analyses (as WRF-WVTs recommends for the source masks), or
+use `np.nan*` functions.
 
 ## Repository
 
