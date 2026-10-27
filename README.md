@@ -223,6 +223,11 @@ in `dyn_em/` (solve_em, start_em, module_em, module_big_step_utilities_em),
 module_physics_init), `share/mediation_wrfmain.F`, `Registry/Registry.EM` and
 the `share`/`dyn_em` Makefiles. Every change is marked `multi-tag WVT`.
 
+## License
+
+The multi-tag additions are released under the [MIT License](LICENSE).
+WRF and WRF-WVTs keep their own terms; see the scope note in `LICENSE`.
+
 ## Build note
 
 If `./compile` fails at the final link with `time: No such file or directory`,
