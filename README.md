@@ -167,15 +167,29 @@ python3 tools/wvt_multitag/gen_wvt_multitag.py 20     # up to 20 tags (tracer_op
 ## Cost
 
 Each extra tag adds 6 advected species and one more pass of the three tracer
-schemes. Measured in the validation runs below (12 h):
+schemes. Measured in the validation runs below:
 
-| domain, MPI tasks | 1 tag | N tags | cost of each extra tag |
-|---|---|---|---|
-| 121 × 101 × 45, 48 | 53–56 s | 2 tags: 74 s | ~35 % of a single-tag run |
-| 941 × 421 × 45, 192 | 440–444 s | 3 tags: 692 s | ~28 % of a single-tag run |
+| run | domain, MPI tasks | 1 tag | N tags | N tags cost (in single-tag runs) | cost of each extra tag |
+|---|---|---|---|---|---|
+| 12 h | 121 × 101 × 45, 48 | 53–56 s | 2 tags: 74 s | 1.35 (instead of 2) | ~35 % of a single-tag run |
+| 12 h | 941 × 421 × 45, 192 | 440–444 s | 3 tags: 692 s | 1.57 (instead of 3) | ~28 % of a single-tag run |
+| 1 month (July 1980) | 941 × 421 × 45, 192 | 7.03–7.13 h | 3 tags: 11.3 h | 1.60 (instead of 3) | ~30 % of a single-tag run |
 
 A separate run per tag would cost 100 % each. On the small domain the grid
 memory WRF allocates grew by 11 % for the second tag.
+
+The one-month test in detail (192 MPI tasks on 4 nodes per run, daily
+full-field output):
+
+| | North Pacific | Gulf of Mexico | Local land | 3 single-tag runs | one 3-tag run | 3-tag vs 3 single-tag |
+|---|---|---|---|---|---|---|
+| wall time | 7.05 h | 7.03 h | 7.13 h | 21.2 h | 11.3 h | −47 % |
+| node-hours | 28.2 | 28.1 | 28.5 | 84.8 | 45.2 | −47 % |
+| core-hours | 1,354 | 1,350 | 1,369 | 4,072 | 2,169 | −47 % |
+| output (31 days) | 65 GB | 65 GB | 65 GB | 195 GB | 99 GB | −49 % |
+
+Output shrinks too because the model fields are written once instead of once
+per tag.
 
 ## Limits
 
