@@ -189,7 +189,7 @@ memory WRF allocates grew by 11 % for the second tag.
 
 ## Validation
 
-All tests: 12 h from 1980-04-01 00 UTC, ERA5 initial and boundary conditions,
+The first tests: 12 h from 1980-04-01 00 UTC, ERA5 initial and boundary conditions,
 u/v grid nudging, WSM6 + Kain–Fritsch + YSU + Noah. "Production" is the
 unmodified WRF 4.3.3 + WRF-WVTs build. Scripts are in `tests/`.
 
@@ -219,6 +219,31 @@ single-tag production WRF-WVTs run.
 Run time on 192 MPI tasks: 440–444 s for each single-tag run, 692 s for the
 3-tag run, i.e. three tags in one run cost 1.6 single-tag runs instead of 3.
 
+**3 tags, one full month (July 1980), 941 × 421 domain.** Same setup as above,
+run for 31 days (1980-07-01 00 UTC to 1980-08-01 00 UTC, 3-hourly ERA5
+boundaries and u/v nudging, daily full-field output, 32 output times). One
+3-tag run (`tracer_opt = 43`) against three single-tag production WRF-WVTs
+runs, all with the same initial/boundary files and the same 192-task MPI
+decomposition. Scripts: `tests/month1/`.
+
+| check (every grid cell, level and daily output time) | result |
+|---|---|
+| 3-tag run vs single-tag runs: 24 model fields | identical (0 difference) |
+| single-tag runs vs each other: 24 model fields (sanity) | identical |
+| tag 1 (North Pacific) vs single-tag North Pacific run: 13 tag fields | identical |
+| tag 2 (Gulf of Mexico) vs single-tag Gulf run: 13 tag fields | identical |
+| tag 3 (local land) vs single-tag local-land run: 13 tag fields | identical |
+
+July 1980 tagged precipitation over south-western North American land
+(20–45° N, 125–95° W, cos-lat weighted; total 43.62 mm): North Pacific
+1.949979 mm (4.5 %), Gulf of Mexico 5.582455 mm (12.8 %), local land
+12.554222 mm (28.8 %), the same to every digit in the 3-tag and the
+single-tag runs. Wall time on 192 tasks: 7.0–7.1 h per single-tag run and
+11.3 h for the 3-tag run (1.6 single-tag runs instead of 3). Full report:
+[`docs/validation_3tag_july1980_report.txt`](docs/validation_3tag_july1980_report.txt).
+
+![July 1980: 3-tag run vs single-tag runs](docs/validation_3tag_july1980.png)
+
 Note on NaN in the boundary zone. On both domains, the original single-tag
 WRF-WVTs produces NaN in `qv_tr` (and `TR_THUM_*`) inside the 5-point
 specified/relaxation zone (`spec_bdy_width = 5`), from the first hours on.
@@ -236,6 +261,8 @@ patch/wrf-wvt-multitag.patch       all source changes (against WRF 4.3.3 + WRF-W
 tools/gen_wvt_multitag.py          the Registry/pointer-table generator (also installed by the patch)
 tools/make_trmask_multitag.py      combine single-tag masks into one multi-tag trmask_d01
 tests/                             the validation runs above (SLURM scripts written for our cluster; adapt paths)
+tests/month1/                      the 1-month (July 1980) 3-tag vs single-tag validation
+docs/                              validation figure and full difference report for the 1-month test
 ```
 
 Files the patch adds to WRF: `share/module_wvt_tags.F`, `dyn_em/module_wvt_set.F`,
